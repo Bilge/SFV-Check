@@ -10,7 +10,7 @@ abort "Cannot read \"#{sfv_file}\"." unless File.readable?(sfv_file)
 # Initialize counters.
 pass = fail = miss = 0
 
-File.open(sfv_file).each_line do |line|
+open(sfv_file).each_line do |line|
   # Skip comments.
   next if line[0] == ';'
 
@@ -21,7 +21,7 @@ File.open(sfv_file).each_line do |line|
   next if filename.nil? || crc.nil?
 
   # File is located relative to SFV file.
-  file = format('%s/%s', File.dirname(sfv_file), filename)
+  file = "#{File.dirname(sfv_file)}/#{filename}"
 
   print "Checking \"#{filename}\"... "
 
