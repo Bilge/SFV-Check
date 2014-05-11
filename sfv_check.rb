@@ -4,8 +4,8 @@ $-w = true # Enable warnings.
 require 'zlib'
 
 sfv_file = ARGV[0]
-abort "Usage: #{$PROGRAM_NAME} <sfv_file>" if sfv_file.nil?
-abort "Cannot read \"#{sfv_file}\"." unless File.readable?(sfv_file)
+abort "Usage: #{$PROGRAM_NAME} <sfv_file>" unless sfv_file
+abort %(Cannot read "#{sfv_file}".) unless File.readable?(sfv_file)
 
 # Initialize counters.
 pass = fail = miss = 0
@@ -18,12 +18,12 @@ open(sfv_file).each_line do |line|
   line.rstrip!
 
   filename, _, crc = line.rpartition(' ')
-  next if filename.nil? || crc.nil?
+  next unless filename && crc
 
   # File is located relative to SFV file.
   file = "#{File.dirname(sfv_file)}/#{filename}"
 
-  print "Checking \"#{filename}\"... "
+  print %(Checking "#{filename}"... )
 
   unless File.readable?(file)
     miss += 1
