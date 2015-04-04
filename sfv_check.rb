@@ -14,11 +14,8 @@ open(sfv_file).each_line do |line|
   # Skip comments.
   next if line[0] == ';'
 
-  # Remove any trailing whitespace such as Windows line endings.
-  line.rstrip!
-
-  filename, _, crc = line.rpartition(' ')
-  next unless filename && crc
+  filename, _, crc = line.rstrip.rpartition(' ')
+  next unless filename[0] && crc[0]
 
   # File is located relative to SFV file.
   file = "#{File.dirname(sfv_file)}/#{filename}"
