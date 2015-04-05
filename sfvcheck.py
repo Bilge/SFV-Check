@@ -40,7 +40,7 @@ for line in sfv:
         continue
 
     with file.open('rb') as f:
-        hash = hex(zlib.crc32(f.read()))[2:]
+        hash = format(zlib.crc32(f.read()), '08x')
 
     if hash == crc.lower():
         ok += 1
