@@ -1,6 +1,8 @@
 SFV Check
 =========
 
+[![Build Status](https://travis-ci.org/Bilge/SFV-Check.svg?branch=master)](https://travis-ci.org/Bilge/SFV-Check)
+
 Scripts to verify CRC hashes in SFV files.
 
 Usage

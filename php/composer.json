@@ -1,0 +1,18 @@
+{
+  "name": "bilge/sfvcheck",
+  "description": "SFV checker in a single PHP file.",
+  "authors": [
+    {
+      "name": "Bilge",
+      "email": "bilge@scriptfusion.com"
+    }
+  ],
+  "require": {
+    "php": ">=5.5"
+  },
+  "require-dev": {
+    "php": ">=5.6",
+    "phpunit/phpunit": "~4",
+    "mikey179/vfsStream": "~1"
+  }
+}
