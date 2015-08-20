@@ -52,6 +52,8 @@ SFV
     {
         $this->setExpectedException(IOException::class);
 
+        $this->expectOutputRegex('[]');
+
         $this->executeSUT('foo');
     }
 
@@ -115,6 +117,8 @@ SFV
     {
         $this->sfv->setContent('foo');
 
+        $this->expectOutputRegex('[]');
+
         $this->executeSUT($this->sfv->url());
     }
 
@@ -132,7 +136,16 @@ SFV
     {
         $this->directory->removeChild($this->sfv->getName());
 
+        $this->expectOutputRegex('[]');
+
         $this->executeSUT($this->directory->url());
+    }
+
+    public function testMultipleSfv()
+    {
+        $this->expectOutputRegex('[(?:^Summary: 2 passed, 0 failed, 0 missing\.$.+?){2}]ms');
+
+        $this->executeSUT($this->sfv->url(), $this->sfv->url());
     }
 
     /**

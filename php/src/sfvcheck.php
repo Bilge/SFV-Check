@@ -11,41 +11,47 @@ if (!class_exists(MalformedFileException::class)) {
     class MalformedFileException extends RuntimeException {}
 }
 
+$script = array_shift($argv);
+
 // This indirection is designed to facilitate testing.
-set_exception_handler(function(Exception $e) use ($argv) {
+set_exception_handler(function(Exception $e) use ($script) {
     echo "{$e->getMessage()}\n";
 
-    if ($argv[0] !== 'test') exit(1);
+    if ($script !== 'test') exit(1);
 });
 
 if ($argc < 2)
-    throw new RuntimeException("Usage: \"$argv[0]\" <sfv_file_or_directory>");
+    throw new RuntimeException("Usage: \"$script\" <sfv_file_or_directory>...");
 
-$sfvFile = $argv[1];
+sfv_check:
 
-if (!is_readable($sfvFile))
-    throw new IOException("Cannot read \"$sfvFile\".");
+$target = array_shift($argv);
+
+echo "\nProcessing \"" . basename($target) . "\"...\n";
+
+if (!is_readable($target))
+    throw new IOException("Cannot read \"$target\".");
 
 // Find SFV file in directory.
-if (is_dir($sfvFile)) {
-    $files = scandir($sfvFile);
+if (is_dir($target)) {
+    $files = scandir($target);
 
     $sfvFiles = [];
     foreach ($files as $filename)
         if (fnmatch('*.sfv', $filename))
-            $sfvFiles[] = $sfvFile . DIRECTORY_SEPARATOR . $filename;
+            $sfvFiles[] = $target . DIRECTORY_SEPARATOR . $filename;
 
     if (!count($sfvFiles))
-        throw new FileNotFoundException("No file matching *.sfv in \"$sfvFile\".");
+        throw new FileNotFoundException("No file matching *.sfv in \"$target\".");
 
-    $sfvFile = $sfvFiles[0];
+    $target = $sfvFiles[0];
 }
 
 // Initialize counters.
 $pass = $fail = $miss = 0;
 
 // Parse SFV lines.
-foreach (new SplFileObject($sfvFile) as $line) {
+foreach (new SplFileObject($target) as $line) {
     // Skip empty lines.
     if (!isset(ltrim($line)[0])) continue;
 
@@ -61,7 +67,7 @@ foreach (new SplFileObject($sfvFile) as $line) {
     $filename = implode(' ', $tokens);
 
     // File is located relative to SFV file.
-    $file = dirname($sfvFile) . DIRECTORY_SEPARATOR . $filename;
+    $file = dirname($target) . DIRECTORY_SEPARATOR . $filename;
 
     echo "Checking \"$filename\"... ";
 
@@ -82,3 +88,6 @@ foreach (new SplFileObject($sfvFile) as $line) {
 }
 
 echo "\nSummary: $pass passed, $fail failed, $miss missing.\n";
+
+// Process next file.
+if (count($argv)) goto sfv_check;
