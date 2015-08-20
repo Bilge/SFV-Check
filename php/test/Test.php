@@ -1,12 +1,8 @@
 <?php
 
 use org\bovigo\vfs\vfsStream;
-use org\bovigo\vfs\vfsStreamContent;
 use org\bovigo\vfs\vfsStreamDirectory;
 use org\bovigo\vfs\vfsStreamFile;
-use org\bovigo\vfs\vfsStreamWrapper;
-use org\bovigo\vfs\visitor\vfsStreamPrintVisitor;
-use org\bovigo\vfs\visitor\vfsStreamStructureVisitor;
 
 final class Test extends PHPUnit_Framework_TestCase
 {
@@ -132,14 +128,11 @@ SFV
         $this->executeSUT($this->directory->url());
     }
 
-    /**
-     * @expectedException FileNotFoundException
-     */
     public function testDirectoryWithoutSfv()
     {
         $this->directory->removeChild($this->sfv->getName());
 
-        $this->expectOutputRegex('[]');
+        $this->expectOutputRegex('[^No file matching \*\.sfv in ".+"\.$]');
 
         $this->executeSUT($this->directory->url());
     }

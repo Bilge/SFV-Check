@@ -4,9 +4,6 @@
 if (!class_exists(IOException::class)) {
     class IOException extends RuntimeException {}
 }
-if (!class_exists(FileNotFoundException::class)) {
-    class FileNotFoundException extends RuntimeException {}
-}
 if (!class_exists(MalformedFileException::class)) {
     class MalformedFileException extends RuntimeException {}
 }
@@ -23,81 +20,79 @@ set_exception_handler(function(Exception $e) use ($script) {
 if ($argc < 2)
     throw new RuntimeException("Usage: \"$script\" <sfv_file_or_directory>...");
 
-sfv_check:
+while ($target = array_shift($argv)) {
+    if (!is_readable($target))
+        throw new IOException("Cannot read \"$target\".");
 
-$target = array_shift($argv);
+    // Find SFV files in directory.
+    if (is_dir($target)) {
+        $sfvFiles = [];
 
-if (!is_readable($target))
-    throw new IOException("Cannot read \"$target\".");
-
-// Find SFV files in directory.
-if (is_dir($target)) {
-    $sfvFiles = [];
-
-    foreach (
-        new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator(
-                $target,
-                RecursiveDirectoryIterator::SKIP_DOTS |
-                RecursiveDirectoryIterator::CURRENT_AS_PATHNAME
+        foreach (
+            new RecursiveIteratorIterator(
+                new RecursiveDirectoryIterator(
+                    $target,
+                    RecursiveDirectoryIterator::SKIP_DOTS |
+                    RecursiveDirectoryIterator::CURRENT_AS_PATHNAME
+                )
             )
+            as $file
         )
-        as $file
-    )
-        if (fnmatch('*.sfv', basename($file)))
-            $sfvFiles[] = $file;
+            if (fnmatch('*.sfv', basename($file)))
+                $sfvFiles[] = $file;
 
-    if (!count($sfvFiles))
-        throw new FileNotFoundException("No file matching *.sfv in \"$target\".");
+        if (!count($sfvFiles)) {
+            echo "No file matching *.sfv in \"$target\".\n";
 
-    $argv = array_merge($sfvFiles, $argv);
+            continue;
+        }
 
-    goto sfv_check;
-}
-
-echo "\nProcessing \"$target\"...\n";
-
-// Initialize counters.
-$pass = $fail = $miss = 0;
-
-// Parse SFV lines.
-foreach (new SplFileObject($target) as $line) {
-    // Skip empty lines.
-    if (!isset(ltrim($line)[0])) continue;
-
-    // Skip comments.
-    if ($line[0] === ';') continue;
-
-    $tokens = explode(' ', $line);
-
-    if (count($tokens) < 2)
-        throw new MalformedFileException("Malformed file at line: \"$line\"");
-
-    $crc = chop(array_pop($tokens));
-    $filename = implode(' ', $tokens);
-
-    // File is located relative to SFV file.
-    $file = dirname($target) . DIRECTORY_SEPARATOR . $filename;
-
-    echo "Checking \"$filename\"... ";
-
-    if (!is_readable($file) || !is_file($file)) {
-        ++$miss;
-        echo "MISSING\n";
+        $argv = array_merge($sfvFiles, $argv);
 
         continue;
     }
 
-    if (($hash = hash_file('crc32b', $file)) === strtolower($crc)) {
-        ++$pass;
-        echo "OK\n";
-    } else {
-        ++$fail;
-        echo "FAILED (our hash $hash does not match $crc)\n";
+    echo "\nProcessing \"$target\"...\n";
+
+    // Initialize counters.
+    $pass = $fail = $miss = 0;
+
+    // Parse SFV lines.
+    foreach (new SplFileObject($target) as $line) {
+        // Skip empty lines.
+        if (!isset(ltrim($line)[0])) continue;
+
+        // Skip comments.
+        if ($line[0] === ';') continue;
+
+        $tokens = explode(' ', $line);
+
+        if (count($tokens) < 2)
+            throw new MalformedFileException("Malformed file at line: \"$line\"");
+
+        $crc = chop(array_pop($tokens));
+        $filename = implode(' ', $tokens);
+
+        // File is located relative to SFV file.
+        $file = dirname($target) . DIRECTORY_SEPARATOR . $filename;
+
+        echo "Checking \"$filename\"... ";
+
+        if (!is_readable($file) || !is_file($file)) {
+            ++$miss;
+            echo "MISSING\n";
+
+            continue;
+        }
+
+        if (($hash = hash_file('crc32b', $file)) === strtolower($crc)) {
+            ++$pass;
+            echo "OK\n";
+        } else {
+            ++$fail;
+            echo "FAILED (our hash $hash does not match $crc)\n";
+        }
     }
+
+    echo "\nSummary: $pass passed, $fail failed, $miss missing.\n";
 }
-
-echo "\nSummary: $pass passed, $fail failed, $miss missing.\n";
-
-// Process next file.
-if (count($argv)) goto sfv_check;
