@@ -1,8 +1,12 @@
 <?php
 
 use org\bovigo\vfs\vfsStream;
+use org\bovigo\vfs\vfsStreamContent;
 use org\bovigo\vfs\vfsStreamDirectory;
 use org\bovigo\vfs\vfsStreamFile;
+use org\bovigo\vfs\vfsStreamWrapper;
+use org\bovigo\vfs\visitor\vfsStreamPrintVisitor;
+use org\bovigo\vfs\visitor\vfsStreamStructureVisitor;
 
 final class Test extends PHPUnit_Framework_TestCase
 {
@@ -16,7 +20,7 @@ final class Test extends PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        $this->directory = vfsStream::setup();
+        vfsStream::setup();
 
         $this->directory = vfsStream::create(
             [
@@ -28,8 +32,7 @@ SFV
                 ,
                 'foo' => 'foo',
                 'bar' => 'bar',
-            ],
-            $this->directory
+            ]
         );
 
         $this->sfv = $this->directory->getChild('foo.sfv');
@@ -146,6 +149,27 @@ SFV
         $this->expectOutputRegex('[(?:^Summary: 2 passed, 0 failed, 0 missing\.$.+?){2}]ms');
 
         $this->executeSUT($this->sfv->url(), $this->sfv->url());
+    }
+
+    public function testRecursiveDirectorySearch()
+    {
+        vfsStream::setup();
+        vfsStream::create(
+            [
+                'foo' => [
+                    'foo.sfv' => 'foo 8c736521',
+                    'foo' => 'foo',
+                ],
+                'bar' => [
+                    'bar.sfv' => 'bar 76ff8caa',
+                    'bar' => 'bar',
+                ],
+            ]
+        );
+
+        $this->expectOutputRegex('[(?:^Processing ".*?\b(?:(?!\1)(foo|bar))\.sfv"\.\.\.$.+?){2}]ms');
+
+        $this->executeSUT($this->directory->url());
     }
 
     /**

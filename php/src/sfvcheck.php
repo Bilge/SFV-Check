@@ -27,25 +27,35 @@ sfv_check:
 
 $target = array_shift($argv);
 
-echo "\nProcessing \"" . basename($target) . "\"...\n";
-
 if (!is_readable($target))
     throw new IOException("Cannot read \"$target\".");
 
-// Find SFV file in directory.
+// Find SFV files in directory.
 if (is_dir($target)) {
-    $files = scandir($target);
-
     $sfvFiles = [];
-    foreach ($files as $filename)
-        if (fnmatch('*.sfv', $filename))
-            $sfvFiles[] = $target . DIRECTORY_SEPARATOR . $filename;
+
+    foreach (
+        new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator(
+                $target,
+                RecursiveDirectoryIterator::SKIP_DOTS |
+                RecursiveDirectoryIterator::CURRENT_AS_PATHNAME
+            )
+        )
+        as $file
+    )
+        if (fnmatch('*.sfv', basename($file)))
+            $sfvFiles[] = $file;
 
     if (!count($sfvFiles))
         throw new FileNotFoundException("No file matching *.sfv in \"$target\".");
 
-    $target = $sfvFiles[0];
+    $argv = array_merge($sfvFiles, $argv);
+
+    goto sfv_check;
 }
+
+echo "\nProcessing \"$target\"...\n";
 
 // Initialize counters.
 $pass = $fail = $miss = 0;
