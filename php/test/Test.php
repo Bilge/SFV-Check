@@ -112,7 +112,7 @@ SFV
     /**
      * @expectedException MalformedFileException
      */
-    public function testInvalidSfv()
+    public function testMalformedSfv()
     {
         $this->sfv->setContent('foo');
 
@@ -123,6 +123,15 @@ SFV
 
     public function testDirectoryWithSfv()
     {
+        $this->expectOutputRegex('[^Summary: 2 passed, 0 failed, 0 missing\.$]m');
+
+        $this->executeSUT($this->directory->url());
+    }
+
+    public function testDirectoryWithCapitalSfv()
+    {
+        $this->sfv->rename('foo.SFV');
+
         $this->expectOutputRegex('[^Summary: 2 passed, 0 failed, 0 missing\.$]m');
 
         $this->executeSUT($this->directory->url());

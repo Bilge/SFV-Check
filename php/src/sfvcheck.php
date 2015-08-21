@@ -38,7 +38,7 @@ while ($target = array_shift($argv)) {
             )
             as $file
         )
-            if (fnmatch('*.sfv', basename($file)))
+            if (fnmatch('*.sfv', basename($file), FNM_CASEFOLD))
                 $sfvFiles[] = $file;
 
         if (!count($sfvFiles)) {
@@ -52,7 +52,7 @@ while ($target = array_shift($argv)) {
         continue;
     }
 
-    echo "\nProcessing \"$target\"...\n";
+    echo "Processing \"$target\"...\n";
 
     // Initialize counters.
     $pass = $fail = $miss = 0;
@@ -94,5 +94,5 @@ while ($target = array_shift($argv)) {
         }
     }
 
-    echo "\nSummary: $pass passed, $fail failed, $miss missing.\n";
+    echo "\nSummary: $pass passed, $fail failed, $miss missing.\n\n";
 }
