@@ -121,6 +121,18 @@ SFV
         $this->executeSUT($this->sfv->url());
     }
 
+    /**
+     * @expectedException MalformedFileException
+     */
+    public function testInvalidCrc()
+    {
+        $this->sfv->setContent('foo bar');
+
+        $this->expectOutputRegex('[]');
+
+        $this->executeSUT($this->sfv->url());
+    }
+
     public function testDirectoryWithSfv()
     {
         $this->expectOutputRegex('[^Summary: 2 passed, 0 failed, 0 missing\.$]m');

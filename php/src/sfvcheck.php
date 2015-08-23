@@ -65,11 +65,11 @@ while ($target = array_shift($argv)) {
         // Skip comments.
         if ($line[0] === ';') continue;
 
-        $tokens = explode(' ', $line);
-
-        if (count($tokens) < 2)
+        // Validate line.
+        if (!preg_match('[^\S.* [^\W_]{8}$]', $line))
             throw new MalformedFileException("Malformed file at line: \"$line\"");
 
+        $tokens = explode(' ', $line);
         $crc = chop(array_pop($tokens));
         $filename = implode(' ', $tokens);
 
