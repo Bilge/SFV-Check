@@ -66,7 +66,7 @@ while ($target = array_shift($argv)) {
         if ($line[0] === ';') continue;
 
         // Validate line.
-        if (!preg_match('[^\S.* [^\W_]{8}$]', $line))
+        if (!preg_match('[^\S.* [^\W_]{8}\r?$]', $line))
             throw new MalformedFileException("Malformed file at line: \"$line\"");
 
         $tokens = explode(' ', $line);

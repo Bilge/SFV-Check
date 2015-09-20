@@ -91,6 +91,15 @@ SFV
         $this->executeSUT($this->sfv->url());
     }
 
+    public function testWindowsLineEndings()
+    {
+        $this->sfv->setContent(str_replace("\n", "\r\n", $this->sfv->getContent()));
+
+        $this->expectOutputRegex('[^Summary: 2 passed, 0 failed, 0 missing\.$]m');
+
+        $this->executeSUT($this->sfv->url());
+    }
+
     public function testFileMissing()
     {
         $this->directory->removeChild('bar');
